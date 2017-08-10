@@ -1,0 +1,170 @@
+<html lang="en">
+<meta charset="utf-8">
+
+	<head>
+
+		<style type="text/css">
+			body {
+				background-color: #000000;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+		</style>
+	</head>
+	<body onload="init();">
+	
+		<script>
+    
+    // orbiter     
+    function Orbiter() {
+    
+    	this.radius = 100; 
+    	this.angle = 0; 
+    	this.rotationSpeed = 0.01; 
+    	this.generation = 0; 
+    	this.children = []; 
+    	
+    
+    	this.update = function() {
+    	
+    	 	this.angle+=this.rotationSpeed; 
+    	};
+    	
+    	this.render = function(c) {
+    
+    		c.save(); 
+    		
+    		c.strokeStyle = "rgba(255,255,255,0.2)"; //white"; 
+    	
+    		c.rotate(this.angle, 0); 
+    		
+    		c.beginPath(); 
+    		c.moveTo(0,0); 
+    		c.lineTo(this.radius,0); 
+    		c.stroke(); 
+    		
+    		c.translate(this.radius,0); 
+    		
+    		c.beginPath(); 
+    		c.arc(0,0,1,0,Math.PI*2,true); 
+    		c.stroke();
+    		
+    		for(var i = 0; i<this.children.length; i++) {
+    			var child = this.children[i]; 
+    			child.update(); 
+    			child.render(c); 
+    		}
+    		
+    	
+    		c.restore(); 
+    	};
+    
+    
+    	this.spawn = function() {
+    		
+    		var numChildren = randomRange(0,4); 
+    		
+    		for(var i = 0; i<numChildren; i++) {
+    			
+    			var child = new Orbiter(); 
+    			this.children.push(child); 
+    			
+    			child.radius = randomRange(5,100); 
+    			child.rotationSpeed = randomRange(-0.02,0.02); 
+    			child.generation = this.generation+1; 
+    			if(this.generation<2) child.spawn(); 
+    			
+    		}
+    		
+    		
+    	};
+    }
+    
+    
+    
+    function randomRange(min, max) {
+    	return ((Math.random()*(max-min)) + min); 
+    }
+
+
+			// screen size variables
+			var	SCREEN_WIDTH = window.innerWidth,
+				SCREEN_HEIGHT = window.innerHeight,
+				HALF_WIDTH = window.innerWidth / 2,
+				HALF_HEIGHT = window.innerHeight / 2,
+		
+			// mouse variables
+				mouseX = HALF_WIDTH, 
+				mouseY = HALF_HEIGHT, 
+				mouseVelX = 0, 
+				mouseVelY = 0, 
+				lastMouseX = mouseX, 
+				lastMouseY = mouseY,
+				mouseDown = false,
+				
+				canvas = document.createElement( 'canvas' ),
+				context = canvas.getContext( '2d' ),				
+		
+			// particle variables
+				orbiter = new Orbiter();
+				orbiter.spawn(); 
+			
+			function init() {
+
+				// canvas setup
+			
+				document.body.appendChild(canvas); 
+				canvas.width = SCREEN_WIDTH; 
+				canvas.height = SCREEN_HEIGHT;
+				
+				initMouseListeners(); 
+				setInterval(loop, 1000 / 30);
+				
+			
+
+			}
+
+			
+			//
+			
+			function loop() {
+
+			
+				// clear the canvas
+				context.fillStyle="rgba(0,0,0,0.01)";
+			  	context.fillRect(0,0, SCREEN_WIDTH, SCREEN_HEIGHT);
+				context.save(); 
+				context.translate(HALF_WIDTH, HALF_HEIGHT); 
+					
+				orbiter.update(); 
+				orbiter.render(context); 
+				context.restore(); 
+
+			}
+			
+				
+			function initMouseListeners() {
+				document.addEventListener('mousemove', onMouseMove, false);
+				document.addEventListener( 'mousedown', onMouseDown, false );
+				document.addEventListener( 'mouseup', onMouseUp, false );
+			}
+
+			function onMouseMove( event ) {
+				event.preventDefault();
+				mouseX = event.clientX;
+				mouseY = event.clientY;
+			}
+
+			function onMouseDown(event) {
+				mouseDown = true; 
+			}
+			function onMouseUp(event) {
+				mouseDown = false; 
+			}
+
+
+
+		</script>
+	</body>
+</html>

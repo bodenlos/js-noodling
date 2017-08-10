@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang=en>
+<head>
+<meta charset=utf-8>
+<title></title>
+<style type="text/css"> 
+	body {
+		background-color: #000000;
+		margin: 0px;
+		text-align:center;
+	}
+	canvas {
+		background-color:#111133;
+	}
+
+</style>
+
+</head>
+<body>
+<script src="../libs/Vector2.js"></script>
+
+<script>
+
+// bullets
+Bullet = function(x, y, angle) {
+	
+	var speed = 5; 
+	
+	this.pos = new Vector2(x,y);
+	this.vel = new Vector2(0,0);
+	 
+	this.vel.x = Math.cos(angle)*speed; 
+	this.vel.y = Math.sin(angle)*speed; 
+	
+	
+	// instead set Vector with speed and rotate
+	
+	this.enabled = true; 
+	
+	this.update = function() {
+		
+		this.pos.plusEq(this.vel); 
+		
+	};
+	
+	this.update();
+	this.update();
+	
+	this.draw = function(c) {
+		c.lineWidth =2; 
+		c.strokeStyle = "#fff"; 
+		c.beginPath(); 
+		c.arc(this.pos.x,this.pos.y,2, 0, Math.PI*2, true); 
+		c.stroke();
+	
+	};
+
+};
+
+// ship
+
+Ship = function(x,y) {
+
+
+	this.pos = new Vector2(x,y); 
+	this.angle = 0; 
+
+	// c = canvas context
+	this.draw = function(c) {
+		
+		c.save();
+		c.translate(halfWidth, halfHeight); 
+		c.rotate(this.angle);
+
+		c.strokeStyle = "#fff"; 
+		c.lineWidth = 2; 
+		
+		c.beginPath();
+		c.moveTo(-10, -10);
+		c.lineTo(-10, 10);
+		c.lineTo(14, 0);
+		c.closePath(); 
+		c.stroke();
+		
+		c.restore();		
+		
+		
+	};
+
+
+}; 
+
+ShipMoving = function(x,y) {
+
+	this.pos = new Vector2(x,y); 
+	this.angle = 0; 
+	this.vel = new Vector2(0,0); 
+	this.temp = new Vector2(0,0); 
+	
+	this.thrustPower = 0.1; 
+	this.rotateSpeed = 4; 
+	
+	this.thrustSize = 0; 
+	
+	var counter = 0; 
+
+	this.update = function() {
+		this.pos.plusEq(this.vel);
+		 
+		if(this.thrustSize>0) this.thrustSize--; 
+	
+	};
+	
+	this.thrust = function() {
+		
+		this.temp.reset(this.thrustPower,0); 
+
+		this.temp.rotate(this.angle); 
+		this.vel.plusEq(this.temp); 
+		if(this.thrustSize<16) this.thrustSize+=2; 
+	};
+	
+	this.rotateLeft = function() {
+		this.angle -= this.rotateSpeed; 
+	};
+	this.rotateRight = function() {
+		this.angle += this.rotateSpeed; 
+	};
+	
+	
+	// c = canvas context
+	this.draw = function(c) {		
+		
+		c.save();
+		c.translate(this.pos.x, this.pos.y); 
+		c.rotate(this.angle * Vector2Const.TO_RADIANS);
+
+		c.strokeStyle = "#fff"; 
+		c.lineWidth = 2; 
+		
+		c.beginPath();
+		c.moveTo(-10, -10);
+		c.lineTo(-10, 10);
+		c.lineTo(14, 0);
+		c.closePath(); 
+		c.stroke();
+		
+		
+		
+		if(this.thrustSize>0) {
+
+			c.beginPath();
+			c.moveTo(-10, -6);
+			
+			c.lineTo(-10 - (this.thrustSize/((counter%2)+1)) , 0);
+			
+			c.lineTo(-10, 6);
+			//c.closePath(); 
+			c.stroke();
+			counter++; 
+		}
+		
+		c.restore();
+		
+		//draw velocity vector 
+		// c.save(); 
+		// 	c.strokeStyle = "#f00"; 
+		// 	c.lineWidth = 2;
+		// 	
+		// 	c.translate(this.pos.x, this.pos.y); 
+		// 	c.beginPath(); 
+		// 	c.moveTo(0,0); 
+		// 	c.lineTo(this.vel.x*10, this.vel.y*10);
+		// 	c.stroke(); 
+		
+		
+		
+		
+		c.restore();		
+
+		
+		
+	};
+
+
+}; 
+
+// tie it all together 
+var canvas,
+ 	c; // c is the canvas' context 2D
+
+setupCanvas();
+
+var mouseX=0, mouseY=0, 
+	halfWidth = canvas.width/2, 
+	halfHeight = canvas.height/2,
+	bullets = [],
+	ship = new Ship(halfWidth, halfHeight);
+
+setInterval(draw, 1000/35); 
+canvas.addEventListener( 'mousedown', onMouseDown, false );
+canvas.addEventListener( 'mousemove', onMouseMove, false );
+ 
+
+
+function draw() {
+
+	c.clearRect(0,0,canvas.width, canvas.height); 
+	
+	ship.angle = Math.atan2(mouseY-halfHeight, mouseX-halfWidth);
+	ship.draw(c);
+	
+	for (var i=0; i<bullets.length;i++) {
+		bullet = bullets[i]; 
+		bullet.update(); 
+		bullet.draw(c); 	
+	}
+		
+	
+}
+
+function onMouseDown() {
+	var bullet = new Bullet(ship.pos.x, ship.pos.y, ship.angle);
+	bullets.push(bullet);  
+	
+}
+
+function onMouseMove(event) {
+
+	if(event.offsetX){
+		mouseX = event.offsetX;
+		mouseY = event.offsetY;
+	} else {
+		// for browsers that don't support offsetX and offsetY (Fx)
+		mouseX = event.pageX - event.target.offsetLeft; 
+		mouseY = event.pageY - event.target.offsetTop; 
+	}
+
+}
+function setupCanvas() {
+	
+	canvas = document.createElement( 'canvas' );
+	c = canvas.getContext( '2d' );
+	canvas.width = 800; 
+	canvas.height = 600; 
+	document.body.appendChild( canvas );
+	
+	c.strokeStyle = "#ffffff";
+	c.lineWidth = 2;
+}
+
+</script>
+</body>
+</html>

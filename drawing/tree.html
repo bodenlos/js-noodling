@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang=en>
+<head>
+<meta charset=utf-8>
+<title></title>
+<style type="text/css"> 
+	body {
+		background-color: #000000;
+		margin: 0px;	
+		text-align:center;
+	}
+
+</style>
+</head>
+<body>
+<script>
+
+// canvas element and 2D context
+var canvas = document.createElement( 'canvas' ),
+	context = canvas.getContext( '2d' );
+	
+	var TO_RADIANS = Math.PI/180;
+
+canvas.width = 800; 
+canvas.height = 600; 
+document.body.appendChild(canvas);
+
+var c = context; 
+
+c.translate(400,500);
+branch(-90,100,Math.floor(Math.random()*256));
+
+function branch(angle, length, color){
+	
+	context.save();
+	
+	context.rotate(angle * TO_RADIANS);
+	context.strokeStyle = "hsl("+color+", 100%,50%)";
+	context.lineWidth = length * 0.02;
+	context.lineCap = "round";
+	context.beginPath();
+	context.moveTo(0,0);
+	context.lineTo(length, 0);
+	
+	context.lineCap = "round";
+	context.stroke();
+	
+	context.translate(length,(Math.random()*0.6));
+	
+	/*if(length>20){
+		branch(Math.random()* -50,length*0.8, Math.floor(Math.random()*328));
+		branch(Math.random()* 50,length*0.8, Math.floor(Math.random()*100));
+		branch(Math.random()* 100,length*0.8, Math.floor(Math.random()*128));
+	}*/
+	
+	var g  = Math.floor(Math.random() * 100);
+		var s = Math.random()*50;
+		context.fillStyle = 'rgba(255,'+g+',0,'+Math.random() * .5 + ')';
+		context.fillRect(0,0,s,s);
+
+		if(length > 20)	{
+			branch(5 + Math.random() * -50, length*.8);
+			branch(-5 + Math.random() * 50, length*.8);
+		}else{
+			for(var i=0; i<200; i++){
+			var g  = Math.floor(Math.random() * 100);
+
+			context.fillStyle = 'rgba(255,'+g+',0,'+Math.random() * .7 + ')';
+			}
+			
+			if(Math.random() * 1 < .5){
+				context.fillRect(0,0,50,50);
+			}else{
+				context.arc(400,300,100,0,Math.PI*2, true);
+
+				context.closePath();
+				context.fill();
+			}
+		}
+	
+	context.restore();
+	
+}
+
+
+ 
+</script>
+</body>
+</html>
